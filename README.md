@@ -124,9 +124,3 @@ result for comparison.
 
 **Duplicated finance records.** Ten facility-years match two BAS records; the
 one with the larger expenditure is kept.
-
-**One retained row.** As Section 3.3.3 notes, one province-aided
-facility-year in 2022 stayed in the panel the dissertation's results were
-produced from. By default `01_build_panel.py` applies the exclusion and drops
-it. Adding `--as-reported` keeps it, so the published numbers can be
-reproduced exactly.
