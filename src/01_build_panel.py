@@ -12,12 +12,6 @@ model exclusions, so a copy of the loaded data is written as well.
 Usage:
     python src/01_build_panel.py --source sim
     python src/01_build_panel.py --source real --anc ANC.xlsx --finance FINANCE.xlsx
-    python src/01_build_panel.py --source real --as-reported ...
-
-The results in the dissertation were produced with one province-aided
-facility-year (2022) still in the panel, as Section 3.3.3 notes. --as-reported
-keeps that row so the published numbers can be reproduced exactly. Without it
-the row is dropped, as the exclusion rule says it should be.
 
 The real extracts can be .xlsx (sheets anc_with_pop_clean and
 finance_with_pop_clean), .csv or .pkl.
@@ -62,7 +56,7 @@ def load(source, anc_path, fin_path):
             read_any(fin_path, "finance_with_pop_clean"))
 
 
-def build(anc, fin, as_reported=False):
+def build(anc, fin):
     steps = []
 
     def note(frame, stage, df):
@@ -74,8 +68,7 @@ def build(anc, fin, as_reported=False):
     note("ANC", "as loaded", anc)
     # Province-aided clinics are not part of the ICRM programme, and a score
     # of zero means the clinic was not assessed (Section 3.3.3)
-    if not as_reported:
-        anc = anc[anc.ownership != "Province Aided"]
+    anc = anc[anc.ownership != "Province Aided"]
     note("ANC", "province-aided excluded", anc)
     anc = anc[anc.score > 0]
     note("ANC", "zero scores excluded", anc)
@@ -118,8 +111,6 @@ def main():
     p.add_argument("--source", choices=["sim", "real"], default="sim")
     p.add_argument("--anc", default="ANC.xlsx")
     p.add_argument("--finance", default="FINANCE.xlsx")
-    p.add_argument("--as-reported", action="store_true",
-                   help="keep the one province-aided row, as in the dissertation")
     a = p.parse_args()
 
     OUT.mkdir(parents=True, exist_ok=True)
@@ -127,7 +118,7 @@ def main():
     anc_raw.to_csv(OUT / "eda_anc.csv", index=False)
     fin_raw.to_csv(OUT / "eda_finance.csv", index=False)
 
-    anc, fin, recon = build(anc_raw, fin_raw, a.as_reported)
+    anc, fin, recon = build(anc_raw, fin_raw)
     anc.to_csv(OUT / "panel_anc.csv", index=False)
     fin.to_csv(OUT / "panel_finance.csv", index=False)
     recon.to_csv(OUT / "sample_reconciliation.csv", index=False)
